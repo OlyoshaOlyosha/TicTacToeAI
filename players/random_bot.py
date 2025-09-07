@@ -1,5 +1,6 @@
-from .base import Player
 import random
+
+from .base import Player
 
 class RandomPlayer(Player):
     """Класс компьютера игрока через случайные ходы"""
