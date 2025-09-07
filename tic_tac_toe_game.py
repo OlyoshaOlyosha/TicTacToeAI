@@ -43,7 +43,7 @@ class Board():
                 (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Вертикали
                 (0, 4, 8), (2, 4, 6)]             # Диагонали
         for a, b, c in wins:
-            if self.board[a] == self.board[b] == self.board[c] == current_player.symbol:
+            if self.board[a] == self.board[b] == self.board[c] == current_player:
                 return True
         return False
     
@@ -61,10 +61,10 @@ class Board():
         self.board[position] = symbol
 
 class Game():
-    def __init__(self):
+    def __init__(self, player_x, player_o):
         self.board = Board()
-        self.player_x = HumanPlayer("X")
-        self.player_o = RandomPlayer("O")
+        self.player_x = player_x
+        self.player_o = player_o
         self.current_player = self.player_x
 
     def play_turn(self, board):
@@ -87,25 +87,60 @@ class Game():
             self.play_turn(self.board)
             
             # Проверка победителя или ничьи
-            if self.board.check_winner(self.current_player):
-                print(f"{self.current_player.symbol} победил!")
-                break
+            if self.board.check_winner(self.current_player.symbol):
+                return self.current_player.symbol
             elif self.board.is_full():
-                print("Ничья!")
-                break
+                return None
             
             # Смена игрока
             self.switch_player()
 
 
+class MatchManager():
+    """Класс для управления матчами"""
+    def __init__(self, player_x, player_o, num_games):
+        self.player_x = player_x
+        self.player_o = player_o
+        self.num_games = num_games
+        self.scores = {"X": 0, "O": 0, "Draws": 0}
+
+    def run_matches(self):
+        """Запуск серии матчей"""
+        for _ in range(self.num_games):
+            game = Game(self.player_x, self.player_o)
+            winner = game.play()
+            if winner == "X":
+                self.scores["X"] += 1
+            elif winner == "O":
+                self.scores["O"] += 1
+            else:
+                self.scores["Draws"] += 1
+        self.print_stats()
+
+    def print_stats(self):
+        """Отображение статистики"""
+        print(f"Всего игр: {self.num_games}")
+        print("Счет:")
+        print(f"X: {self.scores['X']}, O: {self.scores['O']}, Ничьи: {self.scores['Draws']}")
+        print(f"Процент побед X: {self.scores['X'] / self.num_games * 100:.2f}%")
+        print(f"Процент побед O: {self.scores['O'] / self.num_games * 100:.2f}%")
+        print(f"Процент ничьих: {self.scores['Draws'] / self.num_games * 100:.2f}%")
+
+
 def start():
     """Запуск игры"""
-    while True:
-        game = Game()
-        game.play()
-        play_again = input("Хотите сыграть еще раз? (y/n): ")
-        if play_again.lower() != "y":
-            break
+
+    # Провести серию матчей между двумя игроками
+    manager = MatchManager(RandomPlayer("X"), RandomPlayer("O"), 100)
+    manager.run_matches()
+
+    # Игровой цикл для одного матча между человеком и ботом
+    # while True:
+    #     game = Game(RandomPlayer("X"), RandomPlayer("O"))
+    #     game.play()
+    #     play_again = input("Хотите сыграть еще раз? (y/n): ")
+    #     if play_again.lower() != "y":
+    #         break
 
 if __name__ == "__main__":
     start()
