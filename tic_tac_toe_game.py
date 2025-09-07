@@ -1,8 +1,31 @@
 import pretty_errors
 
+class Player():
+    """Класс игрока"""
+    def __init__(self, symbol):
+        self.symbol = symbol
+
+class HumanPlayer(Player):
+    """Класс человека"""
+    def make_move(self, board):
+        """Сделать ход"""
+        position = int(input("Введите ваш ход (1-9): ")) - 1
+        while not board.is_valid_move(position):
+            print("Неверный ход. Попробуйте еще раз.")
+            position = int(input("Введите ваш ход (1-9): ")) - 1
+        return position
+
+class RandomPlayer(Player):
+    """Класс игрока через случайные ходы"""
+    import random
+    def make_move(self, board):
+        """Сделать ход"""
+        position = self.random.choice([i for i in range(9) if board.is_valid_move(i)])
+        return position
+
+
 class Board():
-    """"""
-    
+    """Класс доски"""
     def __init__(self):
         self.board = [" "] * 9
 
@@ -14,17 +37,13 @@ class Board():
         print("---+---+---")
         print(f" {self.board[6]} | {self.board[7]} | {self.board[8]} ")
 
-    def make_move(self, current_player, position):
-        """Сделать ход"""
-        self.board[position] = current_player
-
     def check_winner(self, current_player):
         """Проверка победителя"""
         wins = [(0, 1, 2), (3, 4, 5), (6, 7, 8),  # Горизонтали
                 (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Вертикали
                 (0, 4, 8), (2, 4, 6)]             # Диагонали
         for a, b, c in wins:
-            if self.board[a] == self.board[b] == self.board[c] == current_player:
+            if self.board[a] == self.board[b] == self.board[c] == current_player.symbol:
                 return True
         return False
     
@@ -36,41 +55,48 @@ class Board():
         """Проверка, можно ли походить в клетку"""
         if self.board[position] == " ":
             return True
-
+        
+    def make_move(self, symbol, position):
+        """Поставить символ игрока в указанную клетку"""
+        self.board[position] = symbol
 
 class Game():
     def __init__(self):
         self.board = Board()
-        self.current_player = "X"
+        self.player_x = HumanPlayer("X")
+        self.player_o = RandomPlayer("O")
+        self.current_player = self.player_x
 
-    def play_turn(self, current_player, board):
+    def play_turn(self, board):
         """Ход игрока"""
         board.display()
-        position = int(input(f"{current_player}, введите ваш ход (1-9): ")) - 1
-        while not board.is_valid_move(position):
-            print("Неверный ход. Попробуйте еще раз.")
-            position = int(input(f"{current_player}, введите ваш ход (1-9): ")) - 1
-        board.make_move(current_player, position)
+        position = self.current_player.make_move(self.board)
+        self.board.make_move(self.current_player.symbol, position)
 
-    def switch_player(self, current_player):
+    def switch_player(self):
         """Смена игрока"""
-        if current_player == "X":
-            return "O"
+        if self.current_player == self.player_x:
+            self.current_player = self.player_o
         else:
-            return "X"
+            self.current_player = self.player_x
         
     def play(self):
         """Игровой цикл"""
         while True:
-            self.play_turn(self.current_player, self.board)
+            # Ход игрока
+            self.play_turn(self.board)
             
+            # Проверка победителя или ничьи
             if self.board.check_winner(self.current_player):
-                print(f"{self.current_player} победил!")
+                print(f"{self.current_player.symbol} победил!")
                 break
             elif self.board.is_full():
                 print("Ничья!")
                 break
-            self.current_player = self.switch_player(self.current_player)
+            
+            # Смена игрока
+            self.switch_player()
+
 
 def start():
     """Запуск игры"""
