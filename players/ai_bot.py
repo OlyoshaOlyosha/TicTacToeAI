@@ -12,8 +12,4 @@ class AIPlayer(Player):
         available = [i for i in range(9) if board.is_valid_move(i)] # Список доступных ходов
         position = max(available, key=lambda i: self.weight[i]) # Выбор хода с максимальным весом
         
-        print(f"Доступные ходы: {available}")
-        print(f"Выбранный ход: {position + 1}") 
-        print(f"Вес выбранного хода: {self.weight[position]}")
-        
         return position

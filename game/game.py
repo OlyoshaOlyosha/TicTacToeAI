@@ -1,15 +1,17 @@
 from .board import Board
 
 class Game():
-    def __init__(self, player_x, player_o):
+    def __init__(self, player_x, player_o, show=True):
         self.board = Board()
         self.player_x = player_x
         self.player_o = player_o
         self.current_player = self.player_x
+        self.show = show
 
     def play_turn(self, board):
         """Ход игрока"""
-        board.display()
+        if self.show:
+            board.display()
         position = self.current_player.make_move(self.board)
         self.board.make_move(self.current_player.symbol, position)
 
@@ -24,7 +26,6 @@ class Game():
         """Игровой цикл"""
         while True:
             # Ход игрока
-            print(f"\nХод игрока {self.current_player.symbol}")
             self.play_turn(self.board)
             
             # Проверка победителя или ничьи

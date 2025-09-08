@@ -5,7 +5,7 @@ class Board():
 
     def display(self):
         """Отобразить доску"""
-        print(f" {self.board[0]} | {self.board[1]} | {self.board[2]} ")
+        print(f"\n {self.board[0]} | {self.board[1]} | {self.board[2]} ")
         print("---+---+---")
         print(f" {self.board[3]} | {self.board[4]} | {self.board[5]} ")
         print("---+---+---")
