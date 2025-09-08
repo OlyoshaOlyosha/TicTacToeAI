@@ -24,6 +24,7 @@ class Game():
         """Игровой цикл"""
         while True:
             # Ход игрока
+            print(f"\nХод игрока {self.current_player.symbol}")
             self.play_turn(self.board)
             
             # Проверка победителя или ничьи

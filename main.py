@@ -1,20 +1,23 @@
 import pretty_errors
 
-from players import HumanPlayer, RandomPlayer
+from players import HumanPlayer, RandomPlayer, AIPlayer
 from game import MatchManager, Game
 
 def start():
     """Запуск игры"""
 
     # Провести серию матчей между двумя игроками
-    manager = MatchManager(RandomPlayer("X"), RandomPlayer("O"), 100)
+    manager = MatchManager(RandomPlayer("X"), AIPlayer("O"), 100)
     manager.run_matches()
 
     # Игровой цикл для одного матча между человеком и ботом
     while True:
-        game = Game(HumanPlayer("X"), RandomPlayer("O"))
-        if game.play() is not None:
-            print(f"Победил игрок: {game.play()}")
+        game = Game(HumanPlayer("X"), AIPlayer("O"))
+        winner = game.play()
+        if winner is None:
+            print("Ничья!")
+        else:
+            print(f"Победил игрок: {winner}")
         
         play_again = input("Хотите сыграть еще раз? (y/n): ")
         if play_again.lower() != "y":
