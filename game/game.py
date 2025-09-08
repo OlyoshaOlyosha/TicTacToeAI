@@ -5,6 +5,8 @@ class Game():
         self.board = Board()
         self.player_x = player_x
         self.player_o = player_o
+        self.player_x.set_symbol("X")
+        self.player_o.set_symbol("O")
         self.current_player = self.player_x
         self.show = show
 

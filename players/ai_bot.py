@@ -4,8 +4,7 @@ from .base import Player
 
 class AIPlayer(Player):
     """Класс нейросети игрока"""
-    def __init__(self, symbol):
-        super().__init__(symbol)
+    def __init__(self):
         self.weight = [random.random() for _ in range(9)]
 
     def make_move(self, board):

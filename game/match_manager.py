@@ -1,3 +1,5 @@
+import random
+
 from .game import Game
 
 class MatchManager():
@@ -10,7 +12,14 @@ class MatchManager():
 
     def run_matches(self):
         """Запуск матча"""
-        game = Game(self.player_x, self.player_o, show=self.show)
+
+        # Случайным образом назначаем символы игрокам
+        players = [self.player_x, self.player_o]
+        random.shuffle(players)  
+        players[0].set_symbol("X")
+        players[1].set_symbol("O")
+
+        game = Game(players[0], players[1], show=self.show)
         winner = game.play()
         if winner == "X":
             self.scores["X"] += 1
