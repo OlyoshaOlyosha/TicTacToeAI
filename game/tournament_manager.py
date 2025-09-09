@@ -4,26 +4,25 @@ class TournamentManager:
     """Класс для управления турниром между множеством игроков"""
     def __init__(self, players):
         self.players = players
-        self.results = {player: {"Wins": 0, "Losses": 0, "Draws": 0} for player in players}
+        self.results = {p: {"Wins": 0, "Losses": 0, "Draws": 0} for p in players}
 
     def run(self):
         """Запуск турнира: каждый играет с каждым"""
         for i in range(len(self.players)):
             for j in range(i + 1, len(self.players)):
-                player_x = self.players[i]
-                player_o = self.players[j]
-
-                match = MatchManager(player_x, player_o, show=False)
-                match.run_matches()
+                match = MatchManager(self.players[i], self.players[j], show=False)
+                winner = match.run_match()
 
                 # Обновление результатов
-                self.results[self.players[i]]["Wins"] += match.scores["X"] if self.players[i].symbol == "X" else match.scores["O"]
-                self.results[self.players[i]]["Losses"] += match.scores["O"] if self.players[i].symbol == "X" else match.scores["X"]
-                self.results[self.players[i]]["Draws"] += match.scores["Draws"]
-
-                self.results[self.players[j]]["Wins"] += match.scores["X"] if self.players[j].symbol == "X" else match.scores["O"]
-                self.results[self.players[j]]["Losses"] += match.scores["O"] if self.players[j].symbol == "X" else match.scores["X"]
-                self.results[self.players[j]]["Draws"] += match.scores["Draws"]
+                if winner is None:
+                    self.results[self.players[i]]["Draws"] += 1
+                    self.results[self.players[j]]["Draws"] += 1
+                elif winner == self.players[i]:
+                    self.results[self.players[i]]["Wins"] += 1
+                    self.results[self.players[j]]["Losses"] += 1
+                else:
+                    self.results[self.players[j]]["Wins"] += 1
+                    self.results[self.players[i]]["Losses"] += 1
 
     def print_results(self):
         """Статистика итогов турнира"""
@@ -41,3 +40,4 @@ class TournamentManager:
                 print(f"Процент побед: {stats['Wins'] / total_games * 100:.2f}%")
                 print(f"Процент поражений: {stats['Losses'] / total_games * 100:.2f}%")
                 print(f"Процент ничьих: {stats['Draws'] / total_games * 100:.2f}%")
+                print(f"Набрано очков: {stats['Wins'] * 1 + stats['Draws'] * 0.5}")
