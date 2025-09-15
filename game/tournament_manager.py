@@ -1,43 +1,118 @@
+import random
 from .match_manager import MatchManager
 
 class TournamentManager:
     """Класс для управления турниром между множеством игроков"""
-    def __init__(self, players):
+
+    def __init__(self, players, num_opponents=None):
         self.players = players
         self.results = {p: {"Wins": 0, "Losses": 0, "Draws": 0} for p in players}
+        self.num_opponents = num_opponents
 
     def run(self):
-        """Запуск турнира: каждый играет с каждым"""
+        """Запуск турнира"""
+        if self.num_opponents is None:
+            # Классический "каждый с каждым"
+            self._run_round_robin()
+        else:
+            # Каждый с N случайными соперниками
+            self._run_random_opponents()
+
+    def _run_round_robin(self):
+        """Турнир каждый с каждым"""
         for i in range(len(self.players)):
             for j in range(i + 1, len(self.players)):
-                match = MatchManager(self.players[i], self.players[j], show=False)
-                winner = match.run_match()
+                self._play_match(self.players[i], self.players[j])
 
-                # Обновление результатов
-                if winner is None:
-                    self.results[self.players[i]]["Draws"] += 1
-                    self.results[self.players[j]]["Draws"] += 1
-                elif winner == self.players[i]:
-                    self.results[self.players[i]]["Wins"] += 1
-                    self.results[self.players[j]]["Losses"] += 1
-                else:
-                    self.results[self.players[j]]["Wins"] += 1
-                    self.results[self.players[i]]["Losses"] += 1
+    def _run_random_opponents(self):
+        """Турнир с случайными соперниками"""
+        for current_player_index, current_player in enumerate(self.players):
+            # Получаем всех игроков кроме текущего
+            other_players = [
+                player for index, player in enumerate(self.players) 
+                if index != current_player_index
+            ]
+            
+            # Выбираем случайных соперников
+            opponents = random.sample(
+                other_players,
+                min(self.num_opponents, len(other_players))
+            )
+            
+            for opponent in opponents:
+                self._play_match(current_player, opponent)
+
+    def _process_bonuses(self, player1, player2):
+        """Обрабатывает бонусы за центр и блокировки"""
+        for player in (player1, player2):
+            # Бонус за центр
+            if hasattr(player, "took_center") and player.took_center:
+                self.results[player].setdefault("CenterBonus", 0)
+                self.results[player]["CenterBonus"] += 1
+                player.took_center = False  # Сброс флага
+
+            # Бонус за блокировки
+            if hasattr(player, "blocked") and player.blocked > 0:
+                self.results[player].setdefault("BlockBonus", 0)
+                self.results[player]["BlockBonus"] += player.blocked
+                player.blocked = 0  # Сброс для следующей игры
+
+    def _play_match(self, player1, player2):
+        """Проводит матч и обновляет результаты"""
+        match = MatchManager(player1, player2, show=False)
+        winner = match.run_match()
+
+        if winner is None:
+            self.results[player1]["Draws"] += 1
+            self.results[player2]["Draws"] += 1
+        elif winner == player1:
+            self.results[player1]["Wins"] += 1
+            self.results[player2]["Losses"] += 1
+        else:
+            self.results[player2]["Wins"] += 1
+            self.results[player1]["Losses"] += 1
+
+        # Обработка бонусов
+        self._process_bonuses(player1, player2)
+
+    def ranked_players(self):
+        """Отсортированный список игроков по очкам"""
+        def score(p):
+            return (
+                5 * self.results[p]["Wins"]
+                - 3 * self.results[p]["Losses"]
+                + 2 * self.results[p]["Draws"]
+                + 15 * self.results[p].get("CenterBonus", 0)
+                + 15 * getattr(p, 'blocked', 0)
+            )
+        return sorted(self.players, key=score, reverse=True)
 
     def print_results(self):
         """Статистика итогов турнира"""
-        tournament_total_games = sum(stats["Wins"] + stats["Losses"] + stats["Draws"] for stats in self.results.values()) // 2
+        total_tournament_games = sum(
+            player_stats["Wins"] + player_stats["Losses"] + player_stats["Draws"] 
+            for player_stats in self.results.values()
+        ) // 2
 
         print("Счет:")
-        print(f"Всего игр: {tournament_total_games}")
+        print(f"Всего игр: {total_tournament_games}")
 
-        for i, player in enumerate(self.players):
-            stats = self.results[player]
-            total_games = stats['Wins'] + stats['Losses'] + stats['Draws']
-            print(f"\nИгрок {i + 1}:")
-            print(f"Побед: {stats['Wins']}, Поражений: {stats['Losses']}, Ничьих: {stats['Draws']}")
-            if total_games > 0:
-                print(f"Процент побед: {stats['Wins'] / total_games * 100:.2f}%")
-                print(f"Процент поражений: {stats['Losses'] / total_games * 100:.2f}%")
-                print(f"Процент ничьих: {stats['Draws'] / total_games * 100:.2f}%")
-                print(f"Набрано очков: {stats['Wins'] * 1 + stats['Draws'] * 0.5}")
+        for player_index, player in enumerate(self.players):
+            player_stats = self.results[player]
+            total_player_games = player_stats['Wins'] + player_stats['Losses'] + player_stats['Draws']
+            
+            print(f"\nИгрок {player_index + 1}:")
+            print(f"Побед: {player_stats['Wins']}, "
+                f"Поражений: {player_stats['Losses']}, "
+                f"Ничьих: {player_stats['Draws']}")
+            
+            if total_player_games > 0:
+                win_percentage = player_stats['Wins'] / total_player_games * 100
+                loss_percentage = player_stats['Losses'] / total_player_games * 100
+                draw_percentage = player_stats['Draws'] / total_player_games * 100
+                total_points = player_stats['Wins'] * 1 + player_stats['Draws'] * 0.5
+                
+                print(f"Процент побед: {win_percentage:.2f}%")
+                print(f"Процент поражений: {loss_percentage:.2f}%")
+                print(f"Процент ничьих: {draw_percentage:.2f}%")
+                print(f"Набрано очков: {total_points}")

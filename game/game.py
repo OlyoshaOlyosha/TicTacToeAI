@@ -1,12 +1,21 @@
 from .board import Board
 
-class Game():
+class Game:
+    """Класс для управления одной игрой в крестики-нолики"""
+    
     def __init__(self, player_x, player_o, show=True):
         self.board = Board()
         self.player_x = player_x
         self.player_o = player_o
         self.player_x.set_symbol("X")
         self.player_o.set_symbol("O")
+        
+        # Сброс флагов перед игрой
+        if hasattr(self.player_x, 'took_center'):
+            self.player_x.took_center = False
+        if hasattr(self.player_o, 'took_center'):
+            self.player_o.took_center = False
+        
         self.current_player = self.player_x
         self.show = show
 
@@ -14,8 +23,22 @@ class Game():
         """Ход игрока"""
         if self.show:
             board.display()
+        
         position = self.current_player.make_move(self.board)
         self.board.make_move(self.current_player.symbol, position)
+
+        # Отслеживание взятия центра
+        if position == 4:
+            self.current_player.took_center = True
+        
+        # Отслеживание блокировки хода соперника
+        opponent_symbol = 'O' if self.current_player.symbol == 'X' else 'X'
+        for i in range(9):
+            if board.is_valid_move(i):
+                board.board[i] = opponent_symbol
+                if board.check_winner(opponent_symbol):
+                    self.current_player.blocked = getattr(self.current_player, 'blocked', 0) + 1
+                board.board[i] = " "
 
     def switch_player(self):
         """Смена игрока"""
