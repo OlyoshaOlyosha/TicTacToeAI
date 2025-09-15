@@ -1,5 +1,6 @@
-class Board():
+class Board:
     """Класс доски"""
+    
     def __init__(self):
         self.board = [" "] * 9
 
@@ -13,10 +14,10 @@ class Board():
 
     def check_winner(self, current_player):
         """Проверка победителя"""
-        wins = [(0, 1, 2), (3, 4, 5), (6, 7, 8),  # Горизонтали
-                (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Вертикали
-                (0, 4, 8), (2, 4, 6)]             # Диагонали
-        for a, b, c in wins:
+        winning_combinations = [(0, 1, 2), (3, 4, 5), (6, 7, 8),  # Горизонтали
+                                (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Вертикали
+                                (0, 4, 8), (2, 4, 6)]             # Диагонали
+        for a, b, c in winning_combinations:
             if self.board[a] == self.board[b] == self.board[c] == current_player:
                 return True
         return False
@@ -29,6 +30,7 @@ class Board():
         """Проверка, можно ли походить в клетку"""
         if self.board[position] == " ":
             return True
+        return False
         
     def make_move(self, symbol, position):
         """Поставить символ игрока в указанную клетку"""
