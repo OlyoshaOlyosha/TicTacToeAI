@@ -44,15 +44,29 @@ class Stats:
         self.avg_scores.append(sum(scores) / len(scores))
         self.min_scores.append(min(scores))
 
-    def plot(self):
+    def _group_data(self, data, group_size):
+        """Группирует данные и возвращает средние значения по группам"""
+        return [sum(data[i:i + group_size]) / len(data[i:i + group_size]) 
+                for i in range(0, len(data), group_size)]
+
+    def plot(self, group_size=5):
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 12))
         
-        epochs = range(1, len(self.best_wins) + 1)
+        # Группируем данные
+        grouped_wins = self._group_data(self.best_wins, group_size)
+        grouped_losses = self._group_data(self.best_losses, group_size)
+        grouped_draws = self._group_data(self.best_draws, group_size)
+        grouped_max_scores = self._group_data(self.max_scores, group_size)
+        grouped_avg_scores = self._group_data(self.avg_scores, group_size)
+        grouped_min_scores = self._group_data(self.min_scores, group_size)
+        grouped_center = self._group_data(self.center_counts, group_size)
         
+        epochs = [(i + 1) * group_size for i in range(len(grouped_wins))]
+            
         # Победы/поражения/ничьи
-        ax1.plot(epochs, self.best_wins, label="Победы лучшего", marker='o')
-        ax1.plot(epochs, self.best_losses, label="Поражения лучшего", marker='s')
-        ax1.plot(epochs, self.best_draws, label="Ничьи лучшего", marker='^')
+        ax1.plot(epochs, grouped_wins, label="Победы лучшего", marker='o')
+        ax1.plot(epochs, grouped_losses, label="Поражения лучшего", marker='s')
+        ax1.plot(epochs, grouped_draws, label="Ничьи лучшего", marker='^')
         ax1.set_xlabel("Эпоха")
         ax1.set_ylabel("Количество")
         ax1.set_xticks(epochs)
@@ -61,18 +75,18 @@ class Stats:
         ax1.set_title("Результаты лучшего игрока")
         
         # Очки
-        ax2.plot(epochs, self.max_scores, label="Максимальный", marker='o')
-        ax2.plot(epochs, self.avg_scores, label="Средний", marker='s')
-        ax2.plot(epochs, self.min_scores, label="Минимальный", marker='^')
+        ax2.plot(epochs, grouped_max_scores, label="Максимальный", marker='o')
+        ax2.plot(epochs, grouped_avg_scores, label="Средний", marker='s')
+        ax2.plot(epochs, grouped_min_scores, label="Минимальный", marker='^')
         ax2.set_xlabel("Эпоха")
-        ax2.set_ylabel("Score")
+        ax2.set_ylabel("Очки")
         ax2.set_xticks(epochs)
         ax2.legend()
         ax2.grid(True)
         ax2.set_title("Статистика по очкам")
 
         # Статистика взятия центра лучшим игроком
-        ax3.plot(epochs, self.center_counts, label="Центр взят лучшим", marker='x', color='red')
+        ax3.plot(epochs, grouped_center, label="Центр взят лучшим", marker='x', color='red')
         ax3.set_xlabel("Эпоха")
         ax3.set_ylabel("Количество")
         ax3.set_xticks(epochs)

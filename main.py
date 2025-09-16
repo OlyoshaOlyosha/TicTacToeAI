@@ -110,7 +110,7 @@ def run_evolution():
     # Сохранение и отображение результатов
     save_best(ranked[:SAVE_TOP])
     test_best_vs_random(ranked[0], n_games=TEST_GAMES)
-    stats.plot()
+    stats.plot(3)
     stats.animate_weights()
     
     return ranked[0]
