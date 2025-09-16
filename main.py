@@ -75,7 +75,8 @@ def finish_training(ranked, stats):
     """Завершает обучение: сохраняет, тестирует и показывает статистику"""
     save_best(ranked[:SAVE_TOP])
     test_best_vs_random(ranked[0], n_games=TEST_GAMES)
-    stats.plot(3)
+    stats.print_summary()
+    stats.plot()
     stats.animate_weights()
 
 # ============================================================================
@@ -110,7 +111,7 @@ def run_evolution():
             wins = [tournament.results[p]["Wins"] for p in population]
             losses = [tournament.results[p]["Losses"] for p in population]
             draws = [tournament.results[p]["Draws"] for p in population]
-            stats.log(wins, losses, draws, scores, population)
+            stats.log(wins, losses, draws, scores, population, tournament.results)
             
             # Новое поколение
             population = ga.next_generation(ranked)
