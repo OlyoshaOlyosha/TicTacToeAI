@@ -71,6 +71,13 @@ def calculate_percentages(results, population):
     
     return wins_percent, losses_percent, draws_percent
 
+def finish_training(ranked, stats):
+    """Завершает обучение: сохраняет, тестирует и показывает статистику"""
+    save_best(ranked[:SAVE_TOP])
+    test_best_vs_random(ranked[0], n_games=TEST_GAMES)
+    stats.plot(3)
+    stats.animate_weights()
+
 # ============================================================================
 # Основные функции
 # ============================================================================
@@ -82,37 +89,38 @@ def run_evolution():
     ga = GeneticAlgorithm(POPULATION_SIZE, ELITE_PCT, CROSSOVER_PCT, RANDOM_PCT, MUTATION_RATE)
     stats = Stats()
 
-    for epoch in range(EPOCHS):
-        # Турнир
-        num_opponents = int(POPULATION_SIZE * NUM_OPPONENTS_RATIO)
-        tournament = TournamentManager(population, num_opponents=num_opponents)
-        tournament.run()
-        
-        # Статистика
-        ranked = tournament.ranked_players()
-        scores = calculate_scores(tournament.results, population)
-        wins_percent, losses_percent, draws_percent = calculate_percentages(tournament.results, population)
-        
-        print(f"Эпоха {epoch + 1}: "
-              f"Лучший: {max(scores):.1f} "
-              f"Средний: {sum(scores) / len(scores):.2f} "
-              f"Процент W/L/D: {wins_percent[0]:.2f}/{losses_percent[0]:.2f}/{draws_percent[0]:.2f}")
-        
-        # Логирование
-        wins = [tournament.results[p]["Wins"] for p in population]
-        losses = [tournament.results[p]["Losses"] for p in population]
-        draws = [tournament.results[p]["Draws"] for p in population]
-        stats.log(wins, losses, draws, scores, population)
-        
-        # Новое поколение
-        population = ga.next_generation(ranked)
+    try:
+        for epoch in range(EPOCHS):
+            # Турнир
+            num_opponents = int(POPULATION_SIZE * NUM_OPPONENTS_RATIO)
+            tournament = TournamentManager(population, num_opponents=num_opponents)
+            tournament.run()
+            
+            # Статистика
+            ranked = tournament.ranked_players()
+            scores = calculate_scores(tournament.results, population)
+            wins_percent, losses_percent, draws_percent = calculate_percentages(tournament.results, population)
+            
+            print(f"Эпоха {epoch + 1}: "
+                f"Лучший: {max(scores):.1f} "
+                f"Средний: {sum(scores) / len(scores):.2f} "
+                f"Процент W/L/D: {wins_percent[0]:.2f}/{losses_percent[0]:.2f}/{draws_percent[0]:.2f}")
+            
+            # Логирование
+            wins = [tournament.results[p]["Wins"] for p in population]
+            losses = [tournament.results[p]["Losses"] for p in population]
+            draws = [tournament.results[p]["Draws"] for p in population]
+            stats.log(wins, losses, draws, scores, population)
+            
+            # Новое поколение
+            population = ga.next_generation(ranked)
+    
+    except KeyboardInterrupt:
+        print("\n\nОбучение остановлено пользователем!")
+        print(f"Завершено эпох: {epoch + 1}")
     
     # Сохранение и отображение результатов
-    save_best(ranked[:SAVE_TOP])
-    test_best_vs_random(ranked[0], n_games=TEST_GAMES)
-    stats.plot(3)
-    stats.animate_weights()
-    
+    finish_training(ranked, stats)
     return ranked[0]
 
 def play_with_human(best_ai):
