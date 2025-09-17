@@ -1,4 +1,4 @@
-import math
+from math import tanh
 import random
 
 from .base import Player
@@ -25,27 +25,14 @@ class AIPlayer(Player):
     def make_move(self, board):
         """Делает ход на основе нейронной сети"""
         # Подготовка входных данных
-        inputs = []
-        for cell in board.board:
-            if cell == 'X':
-                inputs.append(1)
-            elif cell == 'O':
-                inputs.append(-1)
-            else:
-                inputs.append(0)
+        inputs = [1 if cell == 'X' else -1 if cell == 'O' else 0 for cell in board.board]
         inputs.append(1 if self.symbol == 'X' else -1)
         
         # Скрытый слой
-        hidden = []
-        for j in range(18):
-            z = sum(inputs[i] * self.w1[i][j] for i in range(10))
-            hidden.append(tanh(z))
+        hidden = [tanh(sum(inputs[i] * self.w1[i][j] for i in range(10))) for j in range(18)]
 
         # Выходной слой
-        outputs = []
-        for j in range(9):
-            score = sum(hidden[i] * self.w2[i][j] for i in range(18))
-            outputs.append(score)
+        outputs = [sum(hidden[i] * self.w2[i][j] for i in range(18)) for j in range(9)]
 
         # Выбираем только доступные ходы
         available = [i for i in range(9) if board.is_valid_move(i)]
@@ -57,7 +44,3 @@ class AIPlayer(Player):
             self.took_center_count += 1
 
         return position
-
-def tanh(x):
-    """Функция активации tanh"""
-    return math.tanh(x)

@@ -26,36 +26,39 @@ class TournamentManager:
 
     def _run_random_opponents(self):
         """Турнир с случайными соперниками"""
+        players_count = len(self.players)
+    
         for current_player_index, current_player in enumerate(self.players):
-            # Получаем всех игроков кроме текущего
-            other_players = [
-                player for index, player in enumerate(self.players) 
-                if index != current_player_index
-            ]
+            # Создаем список индексов вместо копирования игроков
+            other_indices = list(range(current_player_index)) + list(range(current_player_index + 1, players_count))
             
-            # Выбираем случайных соперников
-            opponents = random.sample(
-                other_players,
-                min(self.num_opponents, len(other_players))
+            # Выбираем случайные индексы
+            opponent_indices = random.sample(
+                other_indices,
+                min(self.num_opponents, len(other_indices))
             )
             
-            for opponent in opponents:
-                self._play_match(current_player, opponent)
+            # Играем матчи
+            for opponent_index in opponent_indices:
+                self._play_match(current_player, self.players[opponent_index])
 
     def _process_bonuses(self, player1, player2):
         """Обрабатывает бонусы за центр и блокировки"""
         for player in (player1, player2):
             # Бонус за центр
-            if hasattr(player, "took_center") and player.took_center:
-                self.results[player].setdefault("CenterBonus", 0)
+            if getattr(player, "took_center", False):
+                if "CenterBonus" not in self.results[player]:
+                    self.results[player]["CenterBonus"] = 0
                 self.results[player]["CenterBonus"] += 1
-                player.took_center = False  # Сброс флага
+                player.took_center = False
 
             # Бонус за блокировки
-            if hasattr(player, "blocked") and player.blocked > 0:
-                self.results[player].setdefault("BlockBonus", 0)
-                self.results[player]["BlockBonus"] += player.blocked
-                player.blocked = 0  # Сброс для следующей игры
+            blocked_count = getattr(player, "blocked", 0)
+            if blocked_count > 0:
+                if "BlockBonus" not in self.results[player]:
+                    self.results[player]["BlockBonus"] = 0
+                self.results[player]["BlockBonus"] += blocked_count
+            player.blocked = 0
 
     def _play_match(self, player1, player2):
         """Проводит матч и обновляет результаты"""

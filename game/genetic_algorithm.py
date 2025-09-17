@@ -38,6 +38,8 @@ class GeneticAlgorithm:
             for j in range(len(matrix[i])):
                 if random.random() < mutation_rate:
                     matrix[i][j] += random.uniform(-delta, delta)
+                    # Ограничиваем веса в диапазоне [-1, 1]
+                    matrix[i][j] = max(-1, min(1, matrix[i][j]))
         return matrix
 
     def mutate(self, player, mutation_rate):
@@ -48,19 +50,20 @@ class GeneticAlgorithm:
 
     def next_generation(self, ranked_players):
         """Создает новое поколение игроков на основе рейтинга"""
-        new_population = []
-
-        # Элитные игроки (лучшие без изменений)
+        # Предвычисляем размеры
         elite_size = int(self.population_size * self.elite_pct)
+        crossover_size = int(self.population_size * self.crossover_pct)
+        top_k = int(len(ranked_players) * 0.2)
+        
+        new_population = []
+    
+        # Элитные игроки
         new_population.extend(ranked_players[:elite_size])
         
         # Потомки от скрещивания
-        crossover_size = int(self.population_size * self.crossover_pct)
-        while len(new_population) < elite_size + crossover_size:
-            # Выбираем родителей из топ-20%
-            top_k = int(len(ranked_players) * 0.2)
+        target_size = elite_size + crossover_size
+        while len(new_population) < target_size:
             p1, p2 = random.sample(ranked_players[:top_k], 2)
-            
             child = self.crossover(p1, p2)
             child = self.mutate(child, self.mutation_rate)
             new_population.append(child)

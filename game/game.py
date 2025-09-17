@@ -25,20 +25,21 @@ class Game:
             board.display()
         
         position = self.current_player.make_move(self.board)
-        self.board.make_move(self.current_player.symbol, position)
+
+        opponent_symbol = 'O' if self.current_player.symbol == 'X' else 'X'
+
+        # Отслеживание блокировки хода соперника
+        if board.is_valid_move(position):
+            board.board[position] = opponent_symbol
+            if board.check_winner(opponent_symbol):
+                self.current_player.blocked = getattr(self.current_player, 'blocked', 0) + 1
+            board.board[position] = " "
 
         # Отслеживание взятия центра
         if position == 4:
             self.current_player.took_center = True
-        
-        # Отслеживание блокировки хода соперника
-        opponent_symbol = 'O' if self.current_player.symbol == 'X' else 'X'
-        for i in range(9):
-            if board.is_valid_move(i):
-                board.board[i] = opponent_symbol
-                if board.check_winner(opponent_symbol):
-                    self.current_player.blocked = getattr(self.current_player, 'blocked', 0) + 1
-                board.board[i] = " "
+    
+        self.board.make_move(self.current_player.symbol, position)
 
     def switch_player(self):
         """Смена игрока"""
