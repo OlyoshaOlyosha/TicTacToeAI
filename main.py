@@ -1,3 +1,4 @@
+import time
 import json
 import pretty_errors
 
@@ -42,34 +43,16 @@ def create_population(population_size, best_prev):
 
 def calculate_scores(results, population):
     """Вычисляет очки для каждого игрока"""
-    return [
-          WIN_SCORE    * results[p]["Wins"]
-        + LOSS_SCORE   * results[p]["Losses"]
-        + DRAW_SCORE   * results[p]["Draws"]
-        + CENTER_BONUS * results[p].get("CenterBonus", 0)
-        + BLOCK_BONUS  * getattr(p, 'blocked', 0)
-        for p in population
-    ]
-
-def calculate_percentages(results, population):
-    """Вычисляет процентное соотношение побед/поражений/ничьих"""
-    wins_percent, losses_percent, draws_percent = [], [], []
-
-    for player in population:
-        total_games = (results[player]["Wins"] + 
-                    results[player]["Losses"] + 
-                    results[player]["Draws"])
-        
-        if total_games > 0:
-            wins_percent.append(results[player]["Wins"] / total_games * 100)
-            losses_percent.append(results[player]["Losses"] / total_games * 100)
-            draws_percent.append(results[player]["Draws"] / total_games * 100)
-        else:
-            wins_percent.append(0)
-            losses_percent.append(0)
-            draws_percent.append(0)
-    
-    return wins_percent, losses_percent, draws_percent
+    scores = []
+    for p in population:
+        result = results[p]
+        score = (WIN_SCORE * result["Wins"] + 
+                LOSS_SCORE * result["Losses"] + 
+                DRAW_SCORE * result["Draws"] + 
+                CENTER_BONUS * result.get("CenterBonus", 0) + 
+                BLOCK_BONUS * getattr(p, 'blocked', 0))
+        scores.append(score)
+    return scores
 
 def finish_training(ranked, stats):
     """Завершает обучение: сохраняет, тестирует и показывает статистику"""
@@ -85,40 +68,69 @@ def finish_training(ranked, stats):
 
 def run_evolution():
     """Запускает процесс эволюции и возвращает лучшего игрока"""
+    
+    start_time = time.time()
     best_prev = load_best()
     population = create_population(POPULATION_SIZE, best_prev)
     ga = GeneticAlgorithm(POPULATION_SIZE, ELITE_PCT, CROSSOVER_PCT, RANDOM_PCT, MUTATION_RATE)
     stats = Stats()
 
+    # Предвычисляем константы
+    num_opponents = int(POPULATION_SIZE * NUM_OPPONENTS_RATIO)
+
+    completed_epochs = 0
     try:
         for epoch in range(EPOCHS):
+            epoch_start = time.time()
+
             # Турнир
-            num_opponents = int(POPULATION_SIZE * NUM_OPPONENTS_RATIO)
             tournament = TournamentManager(population, num_opponents=num_opponents)
             tournament.run()
             
             # Статистика
             ranked = tournament.ranked_players()
             scores = calculate_scores(tournament.results, population)
-            wins_percent, losses_percent, draws_percent = calculate_percentages(tournament.results, population)
+
+            first_result = tournament.results[ranked[0]]
+            first_total = first_result["Wins"] + first_result["Losses"] + first_result["Draws"]
+            if first_total > 0:
+                first_win_pct = first_result["Wins"] / first_total * 100
+                first_loss_pct = first_result["Losses"] / first_total * 100
+                first_draw_pct = first_result["Draws"] / first_total * 100
+            else:
+                first_win_pct = first_loss_pct = first_draw_pct = 0
+
+            epoch_time = time.time() - epoch_start
             
             print(f"Эпоха {epoch + 1}: "
                 f"Лучший: {max(scores):.1f} "
                 f"Средний: {sum(scores) / len(scores):.2f} "
-                f"Процент W/L/D: {wins_percent[0]:.2f}/{losses_percent[0]:.2f}/{draws_percent[0]:.2f}")
+                f"Процент W/L/D: {first_win_pct:.2f}/{first_loss_pct:.2f}/{first_draw_pct:.2f} "
+                f"Время: {epoch_time:.3f}с")
             
             # Логирование
-            wins = [tournament.results[p]["Wins"] for p in population]
-            losses = [tournament.results[p]["Losses"] for p in population]
-            draws = [tournament.results[p]["Draws"] for p in population]
+            wins = []
+            losses = []
+            draws = []
+            for p in population:
+                result = tournament.results[p]
+                wins.append(result["Wins"])
+                losses.append(result["Losses"])
+                draws.append(result["Draws"])
+            
             stats.log(wins, losses, draws, scores, population, tournament.results)
             
             # Новое поколение
             population = ga.next_generation(ranked)
+            completed_epochs = epoch + 1
     
     except KeyboardInterrupt:
         print("\n\nОбучение остановлено пользователем!")
         print(f"Завершено эпох: {epoch + 1}")
+
+    total_time = time.time() - start_time
+    print(f"\nОбщее время обучения: {total_time:.3f}с")
+    print(f"Среднее время на эпоху: {total_time / completed_epochs:.3f}с")
     
     # Сохранение и отображение результатов
     finish_training(ranked, stats)
