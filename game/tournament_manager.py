@@ -1,5 +1,6 @@
 import random
 from .match_manager import MatchManager
+from config import WIN_SCORE, LOSS_SCORE, DRAW_SCORE, CENTER_BONUS, BLOCK_BONUS
 
 class TournamentManager:
     """Класс для управления турниром между множеством игроков"""
@@ -82,11 +83,11 @@ class TournamentManager:
         """Отсортированный список игроков по очкам"""
         def score(p):
             return (
-                5 * self.results[p]["Wins"]
-                - 3 * self.results[p]["Losses"]
-                + 2 * self.results[p]["Draws"]
-                + 15 * self.results[p].get("CenterBonus", 0)
-                + 15 * getattr(p, 'blocked', 0)
+                WIN_SCORE * self.results[p]["Wins"] + 
+                LOSS_SCORE * self.results[p]["Losses"] + 
+                DRAW_SCORE * self.results[p]["Draws"] + 
+                CENTER_BONUS * self.results[p].get("CenterBonus", 0) + 
+                BLOCK_BONUS * self.results[p].get("BlockBonus", 0)
             )
         return sorted(self.players, key=score, reverse=True)
 

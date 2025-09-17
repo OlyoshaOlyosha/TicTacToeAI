@@ -50,7 +50,7 @@ def calculate_scores(results, population):
                 LOSS_SCORE * result["Losses"] + 
                 DRAW_SCORE * result["Draws"] + 
                 CENTER_BONUS * result.get("CenterBonus", 0) + 
-                BLOCK_BONUS * getattr(p, 'blocked', 0))
+                BLOCK_BONUS * result.get("BlockBonus", 0))
         scores.append(score)
     return scores
 
