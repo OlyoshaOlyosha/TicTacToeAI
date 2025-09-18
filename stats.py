@@ -47,20 +47,20 @@ class Stats:
         return np.mean(np.std(np.array(weights), axis=0))
 
     def _calculate_stability(self, current_best, epoch):
-        """Проверяет, остался ли тот же игрок лучшим"""
-        if epoch == 0:
-            self.last_best_weights = (current_best.w1, current_best.w2)
-            return 1
+        """
+        Вычисляет скорость роста лучшего результата за последние 5 эпох.
         
-        # Сравниваем первые несколько весов
-        for i in range(min(3, len(current_best.w1))):
-            for j in range(min(3, len(current_best.w1[i]))):
-                if abs(current_best.w1[i][j] - self.last_best_weights[0][i][j]) > 0.01:
-                    self.last_best_weights = (current_best.w1, current_best.w2)
-                    return 0
+        Возвращает разность между текущим и предыдущим результатом.
+        Положительные значения = улучшение, отрицательные = ухудшение.
+        """
+        if len(self.max_scores) < 2:
+            return 0
         
-        self.last_best_weights = (current_best.w1, current_best.w2)
-        return 1
+        # Простая разность между текущим и предыдущим результатом
+        current_score = self.max_scores[-1]
+        previous_score = self.max_scores[-2]
+        
+        return current_score - previous_score
 
     def log(self, wins, losses, draws, scores, population, tournament_results):
         """Записывает статистику текущей эпохи"""
@@ -131,8 +131,12 @@ class Stats:
 
     def plot(self):
         """Отображает расширенную статистику"""
-        fig, axes = plt.subplots(2, 3, figsize=(15, 12))
+        fig, axes = plt.subplots(2, 3, figsize=(15, 8))
         epochs = list(range(1, len(self.max_scores) + 1))
+
+        # Центрируем окно
+        mngr = fig.canvas.manager
+        mngr.window.wm_geometry("+200+100")
         
         # 1. Результаты лучшего игрока
         ax = axes[0, 0]
@@ -150,12 +154,9 @@ class Stats:
         ax.set_ylim(0, 1)
 
         ax_twin = ax.twinx()
-        stability_trend = self._moving_average(self.best_player_stability, 10)
-        stability_clamped = [max(0, min(1, val)) for val in stability_trend]
-        ax_twin.plot(epochs, stability_clamped, color='red')
-        ax_twin.set_ylabel("Стабильность (0-1)", color='red')
+        self._plot_raw_and_trend(ax_twin, epochs, self.best_player_stability, "Скорость роста", 'red')
+        ax_twin.set_ylabel("Скорость роста", color='red')
         ax_twin.tick_params(axis='y', labelcolor='red')
-        ax_twin.set_ylim(0, 1)
         self._setup_axis(ax, "Разнообразие и стабильность")
 
         # 3. Распределение очков
@@ -205,17 +206,35 @@ class Stats:
 
     def animate_weights(self):
         """Создает анимацию изменения весов лучшего игрока по эпохам"""
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+
+        # Центрируем окно анимации
+        mngr = fig.canvas.manager
+        mngr.window.wm_geometry("+450+300")
 
         def update_frame(epoch_index):
             ax1.clear()
             ax2.clear()
             
+            # W1: 10 строк (скрытые нейроны) x 18 столбцов (входные нейроны)
             ax1.imshow(self.w1_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1)
-            ax1.set_title(f'Эпоха {epoch_index + 1} - Веса w1 (10x18)')
+            ax1.set_title(f'Эпоха {epoch_index + 1} - Веса W1')
+            ax1.set_xlabel('Скрытые нейроны (1-18)')
+            ax1.set_ylabel('Входные нейроны (1-10)')
+            ax1.set_xticks(range(18))
+            ax1.set_xticklabels(range(1, 19))
+            ax1.set_yticks(range(10))
+            ax1.set_yticklabels(range(1, 11))
             
-            ax2.imshow(self.w2_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1)
-            ax2.set_title(f'Эпоха {epoch_index + 1} - Веса w2 (18x9)')
+            # W2: 18 строк (скрытые нейроны) x 9 столбцов (выходные нейроны)
+            ax2.imshow(self.w2_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1).set_aspect('equal')
+            ax2.set_title(f'Эпоха {epoch_index + 1} - Веса W2')
+            ax2.set_xlabel('Выходные нейроны (1-8)')
+            ax2.set_ylabel('Скрытые нейроны (1-18)')
+            ax2.set_xticks(range(9))
+            ax2.set_xticklabels(range(1, 10))
+            ax2.set_yticks(range(18))
+            ax2.set_yticklabels(range(1, 19))
 
         animation = FuncAnimation(
             fig, update_frame, 
