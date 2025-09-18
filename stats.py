@@ -70,7 +70,7 @@ class Stats:
         # Сохраняем веса и специальную статистику
         self.w1_history.append([row[:] for row in best_player.w1])
         self.w2_history.append([row[:] for row in best_player.w2])
-        self.center_counts.append(best_player.took_center_count)
+        self.center_counts.append(tournament_results[best_player].get("CenterBonus", 0))
         self.block_counts.append(tournament_results[best_player].get("BlockBonus", 0))
 
         # Результаты лучшего игрока

@@ -51,7 +51,6 @@ class TournamentManager:
                 if "CenterBonus" not in self.results[player]:
                     self.results[player]["CenterBonus"] = 0
                 self.results[player]["CenterBonus"] += 1
-                player.took_center = False
 
             # Бонус за блокировки
             blocked_count = getattr(player, "blocked", 0)
@@ -59,7 +58,6 @@ class TournamentManager:
                 if "BlockBonus" not in self.results[player]:
                     self.results[player]["BlockBonus"] = 0
                 self.results[player]["BlockBonus"] += blocked_count
-            player.blocked = 0
 
     def _play_match(self, player1, player2):
         """Проводит матч и обновляет результаты"""

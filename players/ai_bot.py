@@ -38,9 +38,4 @@ class AIPlayer(Player):
         available = [i for i in range(9) if board.is_valid_move(i)]
         position = max(available, key=lambda i: outputs[i])
 
-        # Отслеживаем взятие центра
-        if position == 4:
-            self.took_center = True
-            self.took_center_count += 1
-
         return position

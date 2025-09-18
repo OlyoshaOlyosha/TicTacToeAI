@@ -15,6 +15,10 @@ class Game:
             self.player_x.took_center = False
         if hasattr(self.player_o, 'took_center'):
             self.player_o.took_center = False
+
+        # Сброс блокировок перед КАЖДОЙ игрой
+        self.player_x.blocked = 0
+        self.player_o.blocked = 0
         
         self.current_player = self.player_x
         self.show = show

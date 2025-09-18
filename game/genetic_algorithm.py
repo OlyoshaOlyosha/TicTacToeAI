@@ -53,17 +53,16 @@ class GeneticAlgorithm:
         # Предвычисляем размеры
         elite_size = int(self.population_size * self.elite_pct)
         crossover_size = int(self.population_size * self.crossover_pct)
-        top_k = int(len(ranked_players) * 0.2)
+        random_size = int(self.population_size * self.random_pct)
         
         new_population = []
-    
+        
         # Элитные игроки
         new_population.extend(ranked_players[:elite_size])
         
         # Потомки от скрещивания
-        target_size = elite_size + crossover_size
-        while len(new_population) < target_size:
-            p1, p2 = random.sample(ranked_players[:top_k], 2)
+        while len(new_population) < elite_size + crossover_size:
+            p1, p2 = random.sample(ranked_players[:elite_size], 2)  # Только из элиты!
             child = self.crossover(p1, p2)
             child = self.mutate(child, self.mutation_rate)
             new_population.append(child)
