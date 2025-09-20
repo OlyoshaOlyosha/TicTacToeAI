@@ -6,7 +6,10 @@ from players import AIPlayer, HumanPlayer
 from game import Game, TournamentManager, GeneticAlgorithm
 from stats import Stats
 from test_best_vs_random import test_best_vs_random
-from config import *
+from config import  (
+    POPULATION_SIZE, EPOCHS, ELITE_PCT, CROSSOVER_PCT, RANDOM_PCT, MUTATION_RATE,
+    NUM_OPPONENTS_RATIO, SAVE_TOP, TEST_GAMES,
+    WIN_SCORE, LOSS_SCORE, DRAW_SCORE, CENTER_BONUS, BLOCK_BONUS)
 
 # ============================================================================
 # Функции сохранения/загрузки
