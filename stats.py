@@ -227,7 +227,7 @@ class Stats:
             ax1.set_yticklabels(range(1, 11))
             
             # W2: 18 строк (скрытые нейроны) x 9 столбцов (выходные нейроны)
-            ax2.imshow(self.w2_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1).set_aspect('equal')
+            ax2.imshow(self.w2_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1)
             ax2.set_title(f'Эпоха {epoch_index + 1} - Веса W2')
             ax2.set_xlabel('Выходные нейроны (1-8)')
             ax2.set_ylabel('Скрытые нейроны (1-18)')
