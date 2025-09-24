@@ -23,16 +23,17 @@ class GeneticAlgorithm:
         return AIPlayer(w1=child_w1, w2=child_w2)
     
     def _crossover_matrix(self, matrix1, matrix2):
-        """Скрещивает две матрицы весов (поэлементный выбор)"""
+        """Скрещивает две матрицы весов (блочный кроссовер)"""
         result_matrix = []
+        crossover_point = random.randint(0, len(matrix1))
         for i in range(len(matrix1)):
-            row = []
-            for j in range(len(matrix1[i])):
-                row.append(random.choice([matrix1[i][j], matrix2[i][j]]))
-            result_matrix.append(row)
+            if i < crossover_point:
+                result_matrix.append(matrix1[i][:])
+            else:
+                result_matrix.append(matrix2[i][:])
         return result_matrix
 
-    def mutate_matrix(self, matrix, mutation_rate, delta=0.1):
+    def mutate_matrix(self, matrix, mutation_rate, delta=0.05):
         """Применяет мутации к матрице весов с заданной вероятностью"""
         for i in range(len(matrix)):
             for j in range(len(matrix[i])):
@@ -61,14 +62,14 @@ class GeneticAlgorithm:
         new_population.extend(ranked_players[:elite_size])
         
         # Потомки от скрещивания
-        while len(new_population) < elite_size + crossover_size:
-            p1, p2 = random.sample(ranked_players[:elite_size], 2)  # Только из элиты!
+        for _ in range(crossover_size):
+            p1, p2 = random.sample(ranked_players[:elite_size], 2)
             child = self.crossover(p1, p2)
             child = self.mutate(child, self.mutation_rate)
             new_population.append(child)
         
         # Случайные новые игроки
-        while len(new_population) < self.population_size:
+        for _ in range(random_size):
             new_population.append(AIPlayer())
 
         return new_population
