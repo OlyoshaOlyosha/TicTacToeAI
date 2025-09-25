@@ -1,4 +1,4 @@
-from math import tanh
+import numpy as np
 import random
 
 from .base import Player
@@ -23,17 +23,15 @@ class AIPlayer(Player):
     def make_move(self, board):
         """Делает ход на основе нейронной сети"""
         # Подготовка входных данных
-        inputs = [1 if cell == 'X' else -1 if cell == 'O' else 0 for cell in board.board]
-        inputs.append(1 if self.symbol == 'X' else -1)
+        inputs = np.array([1 if cell == 'X' else -1 if cell == 'O' else 0 for cell in board.board] + 
+                          [1 if self.symbol == 'X' else -1])
         
         # Скрытый слой
-        hidden = [tanh(sum(inputs[i] * self.w1[i][j] for i in range(10))) for j in range(9)]
+        hidden = np.tanh(np.dot(inputs, self.w1))
 
         # Выходной слой
-        outputs = [sum(hidden[i] * self.w2[i][j] for i in range(9)) for j in range(9)]
+        outputs = np.dot(hidden, self.w2)
 
         # Выбираем только доступные ходы
         available = [i for i in range(9) if board.is_valid_move(i)]
-        position = max(available, key=lambda i: outputs[i])
-
-        return position
+        return max(available, key=lambda i: outputs[i])
