@@ -88,33 +88,3 @@ class TournamentManager:
                 BLOCK_BONUS * self.results[p].get("BlockBonus", 0)
             )
         return sorted(self.players, key=score, reverse=True)
-
-    def print_results(self):
-        """Статистика итогов турнира"""
-        total_tournament_games = sum(
-            player_stats["Wins"] + player_stats["Losses"] + player_stats["Draws"] 
-            for player_stats in self.results.values()
-        ) // 2
-
-        print("Счет:")
-        print(f"Всего игр: {total_tournament_games}")
-
-        for player_index, player in enumerate(self.players):
-            player_stats = self.results[player]
-            total_player_games = player_stats['Wins'] + player_stats['Losses'] + player_stats['Draws']
-            
-            print(f"\nИгрок {player_index + 1}:")
-            print(f"Побед: {player_stats['Wins']}, "
-                f"Поражений: {player_stats['Losses']}, "
-                f"Ничьих: {player_stats['Draws']}")
-            
-            if total_player_games > 0:
-                win_percentage = player_stats['Wins'] / total_player_games * 100
-                loss_percentage = player_stats['Losses'] / total_player_games * 100
-                draw_percentage = player_stats['Draws'] / total_player_games * 100
-                total_points = player_stats['Wins'] * 1 + player_stats['Draws'] * 0.5
-                
-                print(f"Процент побед: {win_percentage:.2f}%")
-                print(f"Процент поражений: {loss_percentage:.2f}%")
-                print(f"Процент ничьих: {draw_percentage:.2f}%")
-                print(f"Набрано очков: {total_points}")
