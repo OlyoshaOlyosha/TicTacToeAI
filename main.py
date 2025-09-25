@@ -46,16 +46,12 @@ def create_population(population_size, best_prev):
 
 def calculate_scores(results, population):
     """Вычисляет очки для каждого игрока"""
-    scores = []
-    for p in population:
-        result = results[p]
-        score = (WIN_SCORE * result["Wins"] + 
-                LOSS_SCORE * result["Losses"] + 
-                DRAW_SCORE * result["Draws"] + 
-                CENTER_BONUS * result.get("CenterBonus", 0) + 
-                BLOCK_BONUS * result.get("BlockBonus", 0))
-        scores.append(score)
-    return scores
+    return [WIN_SCORE * results[p]["Wins"] + 
+            LOSS_SCORE * results[p]["Losses"] + 
+            DRAW_SCORE * results[p]["Draws"] + 
+            CENTER_BONUS * results[p].get("CenterBonus", 0) + 
+            BLOCK_BONUS * results[p].get("BlockBonus", 0)
+            for p in population]
 
 def finish_training(ranked, stats):
     """Завершает обучение: сохраняет, тестирует и показывает статистику"""
