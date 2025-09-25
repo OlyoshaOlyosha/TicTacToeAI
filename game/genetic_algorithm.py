@@ -1,3 +1,4 @@
+import numpy as np
 import random
 
 from players.ai_bot import AIPlayer
@@ -24,24 +25,31 @@ class GeneticAlgorithm:
     
     def _crossover_matrix(self, matrix1, matrix2):
         """Скрещивает две матрицы весов (блочный кроссовер)"""
-        result_matrix = []
+        matrix1 = np.array(matrix1)
+        matrix2 = np.array(matrix2)
+        
         crossover_point = random.randint(0, len(matrix1))
-        for i in range(len(matrix1)):
-            if i < crossover_point:
-                result_matrix.append(matrix1[i][:])
-            else:
-                result_matrix.append(matrix2[i][:])
-        return result_matrix
+        
+        result = matrix1.copy()
+        result[crossover_point:] = matrix2[crossover_point:]
+        
+        return result.tolist()
 
     def mutate_matrix(self, matrix, mutation_rate, delta=0.05):
         """Применяет мутации к матрице весов с заданной вероятностью"""
-        for i in range(len(matrix)):
-            for j in range(len(matrix[i])):
-                if random.random() < mutation_rate:
-                    matrix[i][j] += random.uniform(-delta, delta)
-                    # Ограничиваем веса в диапазоне [-1, 1]
-                    matrix[i][j] = max(-1, min(1, matrix[i][j]))
-        return matrix
+        matrix = np.array(matrix)
+        
+        # Создаем маску для мутаций
+        mutation_mask = np.random.random(matrix.shape) < mutation_rate
+        
+        # Применяем мутации только к выбранным элементам
+        mutations = np.random.uniform(-delta, delta, matrix.shape)
+        matrix[mutation_mask] += mutations[mutation_mask]
+        
+        # Ограничиваем веса
+        matrix = np.clip(matrix, -1, 1)
+        
+        return matrix.tolist()
 
     def mutate(self, player, mutation_rate):
         """Мутирует веса нейронной сети игрока"""
