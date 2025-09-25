@@ -9,7 +9,6 @@ class AIPlayer(Player):
     def __init__(self, w1=None, w2=None):
         super().__init__()
         self.took_center = False
-        self.took_center_count = 0
         
         if w1 is None:
             # Веса вход-скрытый слой (10x9)
