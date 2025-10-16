@@ -134,9 +134,10 @@ class Stats:
         fig, axes = plt.subplots(2, 3, figsize=(15, 8))
         epochs = list(range(1, len(self.max_scores) + 1))
 
-        # Центрируем окно
+        # Центрируем окно (если поддерживается)
         mngr = fig.canvas.manager
-        mngr.window.wm_geometry("+200+100")
+        if hasattr(mngr.window, 'wm_geometry'):
+            mngr.window.wm_geometry("+200+100")
         
         # 1. Результаты лучшего игрока
         ax = axes[0, 0]
@@ -208,9 +209,10 @@ class Stats:
         """Создает анимацию изменения весов лучшего игрока по эпохам"""
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
 
-        # Центрируем окно анимации
+        # Центрируем окно анимации (если поддерживается)
         mngr = fig.canvas.manager
-        mngr.window.wm_geometry("+450+300")
+        if hasattr(mngr.window, 'wm_geometry'):
+            mngr.window.wm_geometry("+450+300")
 
         def update_frame(epoch_index):
             ax1.clear()
