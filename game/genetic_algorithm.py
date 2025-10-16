@@ -35,15 +35,15 @@ class GeneticAlgorithm:
         
         return result.tolist()
 
-    def mutate_matrix(self, matrix, mutation_rate, delta=0.05):
+    def mutate_matrix(self, matrix, mutation_rate, delta=0.2):
         """Применяет мутации к матрице весов с заданной вероятностью"""
         matrix = np.array(matrix)
         
         # Создаем маску для мутаций
         mutation_mask = np.random.random(matrix.shape) < mutation_rate
         
-        # Применяем мутации только к выбранным элементам
-        mutations = np.random.uniform(-delta, delta, matrix.shape)
+        # Применяем мутации только к выбранным элементам - используем нормальное распределение
+        mutations = np.random.normal(0, delta, matrix.shape)
         matrix[mutation_mask] += mutations[mutation_mask]
         
         # Ограничиваем веса
