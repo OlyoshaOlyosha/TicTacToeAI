@@ -238,10 +238,14 @@ class Stats:
             ax2.set_yticks(range(9))
             ax2.set_yticklabels(range(1, 10))
 
+        # Анимация длится 10 секунд независимо от количества эпох
+        num_epochs = len(self.w1_history)
+        interval = 10000 // num_epochs
+        
         animation = FuncAnimation(
             fig, update_frame, 
-            frames=len(self.w1_history), 
-            interval=50, 
+            frames=num_epochs, 
+            interval=interval, 
             repeat=True
         )
         plt.show()
