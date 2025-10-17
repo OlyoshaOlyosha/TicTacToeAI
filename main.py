@@ -137,6 +137,10 @@ def run_evolution():
 
 def play_with_human(best_ai):
     """Игровой цикл человек против ИИ"""
+    play_game = input("Хотите сыграть против ИИ? (y/n): ")
+    if play_game.lower() != "y":
+        return
+        
     while True:
         game = Game(HumanPlayer(), best_ai, show=True)
         winner = game.play()
