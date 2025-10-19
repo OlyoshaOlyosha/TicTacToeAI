@@ -41,7 +41,8 @@ class Stats:
         
         weights = []
         for player in population:
-            flat_weights = [w for row in player.w1[:5] for w in row[:5]]
+            # Берем первые 5 строк и 10 столбцов для анализа (W1: 10x20)
+            flat_weights = [w for row in player.w1[:5] for w in row[:10]]
             weights.append(flat_weights)
         
         return np.mean(np.std(np.array(weights), axis=0))
@@ -218,25 +219,25 @@ class Stats:
             ax1.clear()
             ax2.clear()
             
-            # W1: 10 строк (скрытые нейроны) x 18 столбцов (входные нейроны)
+            # W1: 10 строк (входные нейроны) x 20 столбцов (скрытые нейроны)
             ax1.imshow(self.w1_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1)
             ax1.set_title(f'Эпоха {epoch_index + 1} - Веса W1')
-            ax1.set_xlabel('Скрытые нейроны (1-9)')
+            ax1.set_xlabel('Скрытые нейроны (1-20)')
             ax1.set_ylabel('Входные нейроны (1-10)')
-            ax1.set_xticks(range(9))
-            ax1.set_xticklabels(range(1, 10))
+            ax1.set_xticks(range(20))
+            ax1.set_xticklabels(range(1, 21))
             ax1.set_yticks(range(10))
             ax1.set_yticklabels(range(1, 11))
             
-            # W2: 18 строк (скрытые нейроны) x 9 столбцов (выходные нейроны)
+            # W2: 20 строк (скрытые нейроны) x 9 столбцов (выходные нейроны)
             ax2.imshow(self.w2_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1)
             ax2.set_title(f'Эпоха {epoch_index + 1} - Веса W2')
             ax2.set_xlabel('Выходные нейроны (1-9)')
-            ax2.set_ylabel('Скрытые нейроны (1-9)')
+            ax2.set_ylabel('Скрытые нейроны (1-20)')
             ax2.set_xticks(range(9))
             ax2.set_xticklabels(range(1, 10))
-            ax2.set_yticks(range(9))
-            ax2.set_yticklabels(range(1, 10))
+            ax2.set_yticks(range(20))
+            ax2.set_yticklabels(range(1, 21))
 
         # Анимация длится 10 секунд независимо от количества эпох
         num_epochs = len(self.w1_history)

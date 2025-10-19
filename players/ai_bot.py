@@ -11,10 +11,10 @@ class AIPlayer(Player):
         self.took_center = False
         
         if w1 is None:
-            # Веса вход-скрытый слой (10x9)
-            self.w1 = [[random.uniform(-1, 1) for _ in range(9)] for _ in range(10)]
-            # Веса скрытый-выходной слой (9x9)
-            self.w2 = [[random.uniform(-1, 1) for _ in range(9)] for _ in range(9)]
+            # Веса вход-скрытый слой (10x20)
+            self.w1 = [[random.uniform(-1, 1) for _ in range(20)] for _ in range(10)]
+            # Веса скрытый-выходной слой (20x9)
+            self.w2 = [[random.uniform(-1, 1) for _ in range(9)] for _ in range(20)]
         else:
             self.w1 = w1
             self.w2 = w2
