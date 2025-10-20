@@ -1,6 +1,5 @@
 import time
 import json
-import pretty_errors
 
 from players import AIPlayer, HumanPlayer
 from game import Game, TournamentManager, GeneticAlgorithm
