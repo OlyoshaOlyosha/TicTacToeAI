@@ -192,19 +192,33 @@ class Stats:
         plt.show()
 
     def print_summary(self):
-        """Выводит сводку по обучению"""
+        """Выводит сводку по обучению и возвращает данные"""
         if not self.max_scores:
             return
             
-        print("\n=== СВОДКА ПО ОБУЧЕНИЮ ===")
-        print(f"Эпох завершено: {len(self.max_scores)}")
-        print(f"Лучший результат: {max(self.max_scores):.1f} очков")
-        print(f"Средний прогресс: {(self.max_scores[-1] - self.max_scores[0]):.1f} очков")
-        print(f"Финальный % побед лучшего: {self.win_rates[-1]:.1f}%")
-        print(f"Среднее разнообразие: {np.mean(self.population_diversity):.3f}")
-        
+        epochs_completed = len(self.max_scores)
+        best_score = max(self.max_scores)
+        progress = self.max_scores[-1] - self.max_scores[0]
+        final_win_rate = self.win_rates[-1]
+        avg_diversity = np.mean(self.population_diversity)
         recent_stability = np.mean(self.best_player_stability[-10:]) if len(self.best_player_stability) >= 10 else np.mean(self.best_player_stability)
+        
+        print("\n=== СВОДКА ПО ОБУЧЕНИЮ ===")
+        print(f"Эпох завершено: {epochs_completed}")
+        print(f"Лучший результат: {best_score:.1f} очков")
+        print(f"Средний прогресс: {progress:.1f} очков")
+        print(f"Финальный % побед лучшего: {final_win_rate:.1f}%")
+        print(f"Среднее разнообразие: {avg_diversity:.3f}")
         print(f"Стабильность (последние эпохи): {recent_stability:.2f}")
+        
+        return {
+            "epochs_completed": epochs_completed,
+            "best_score": best_score,
+            "progress": progress,
+            "final_win_rate": final_win_rate,
+            "avg_diversity": avg_diversity,
+            "recent_stability": recent_stability
+        }
 
     def animate_weights(self):
         """Создает анимацию изменения весов лучшего игрока по эпохам"""

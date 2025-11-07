@@ -1,5 +1,7 @@
 import time
 import json
+import os
+from datetime import datetime
 
 from players import AIPlayer, HumanPlayer
 from game import Game, TournamentManager, GeneticAlgorithm
@@ -39,6 +41,67 @@ def create_population(population_size, best_prev):
     else:
         return [AIPlayer() for _ in range(population_size)]
 
+def save_experiment_results(summary_data, test_results):
+    """Сохраняет результаты эксперимента в формате Markdown"""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # Подсчитываем номер эксперимента
+    filename = "neural_network_tuning_log.md"
+    experiment_num = 1
+    if os.path.exists(filename):
+        with open(filename, "r", encoding="utf-8") as f:
+            experiment_num = f.read().count("# ЭКСПЕРИМЕНТ") + 1
+    
+    # Формируем отчет в формате Markdown
+    total_games = sum(test_results.values())
+    win_pct = test_results["Wins"] / total_games * 100
+    draw_pct = test_results["Draws"] / total_games * 100
+    loss_pct = test_results["Losses"] / total_games * 100
+    
+    report = f"""
+# ЭКСПЕРИМЕНТ №{experiment_num:03d}                                   
+**Дата**: {timestamp}
+
+## 🎯 РЕЗУЛЬТАТ vs RandomPlayer
+**Победы**: {test_results["Wins"]} ({win_pct:.1f}%)  │  **Ничьи**: {test_results["Draws"]} ({draw_pct:.1f}%)  │  **Поражения**: {test_results["Losses"]} ({loss_pct:.1f}%)
+
+## 📊 ОБУЧЕНИЕ
+**Эпохи**: {summary_data["epochs_completed"]}  │  **Лучший результат**: {summary_data["best_score"]:.0f} очков  │  **Средний прогресс**: {summary_data["progress"]:.0f}  
+**% Побед Лучшего**: {summary_data["final_win_rate"]:.1f}%  │  **Разнообразие**: {summary_data["avg_diversity"]:.3f}  │  **Стабильность**: {summary_data["recent_stability"]:.2f}
+
+
+## ⚙️ Параметры для config.py
+
+```python
+# Параметры эволюции
+POPULATION_SIZE = {POPULATION_SIZE}
+EPOCHS = {EPOCHS}
+ELITE_PCT = {ELITE_PCT}
+CROSSOVER_PCT = {CROSSOVER_PCT}
+RANDOM_PCT = {RANDOM_PCT}
+MUTATION_RATE = {MUTATION_RATE}
+
+# Параметры турнира
+NUM_OPPONENTS_RATIO = {NUM_OPPONENTS_RATIO}
+
+# Награда для подсчета очков
+WIN_SCORE = {WIN_SCORE}
+LOSS_SCORE = {LOSS_SCORE}
+DRAW_SCORE = {DRAW_SCORE}
+CENTER_BONUS = {CENTER_BONUS}
+BLOCK_BONUS = {BLOCK_BONUS}
+```
+
+---
+
+"""
+    
+    # Добавляем в общий файл
+    with open(filename, "a", encoding="utf-8") as f:
+        f.write(report)
+    
+    print(f"Результаты эксперимента добавлены в {filename}")
+
 # ============================================================================
 # Функции расчетов
 # ============================================================================
@@ -55,8 +118,12 @@ def calculate_scores(results, population):
 def finish_training(ranked, stats):
     """Завершает обучение: сохраняет, тестирует и показывает статистику"""
     save_best(ranked[:SAVE_TOP])
-    test_best_vs_random(ranked[0], n_games=TEST_GAMES)
-    stats.print_summary()
+    test_results = test_best_vs_random(ranked[0], n_games=TEST_GAMES)
+    summary_data = stats.print_summary()
+
+    # Сохраняем результаты эксперимента
+    save_experiment_results(summary_data, test_results)
+
     stats.plot()
     stats.animate_weights()
 
