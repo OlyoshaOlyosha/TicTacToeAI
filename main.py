@@ -206,7 +206,15 @@ def play_with_human(best_ai):
     play_game = input("Хотите сыграть против ИИ? (y/n): ")
     if play_game.lower() != "y":
         return
-        
+
+    try:
+        from ui.gui_play import GUIPlay
+        gui = GUIPlay(ai_player=best_ai)
+        gui.start()
+        return
+    except Exception:
+        pass
+
     while True:
         game = Game(HumanPlayer(), best_ai, show=True)
         winner = game.play()
