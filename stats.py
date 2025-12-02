@@ -41,7 +41,7 @@ class Stats:
         
         weights = []
         for player in population:
-            # Берем первые 5 строк и 10 столбцов для анализа (W1: 10x20)
+            # Берем первые 5 строк и 10 столбцов для анализа (W1: 11x20)
             flat_weights = [w for row in player.w1[:5] for w in row[:10]]
             weights.append(flat_weights)
         
@@ -233,15 +233,15 @@ class Stats:
             ax1.clear()
             ax2.clear()
             
-            # W1: 10 строк (входные нейроны) x 20 столбцов (скрытые нейроны)
+            # W1: 11 строк (входные нейроны) x 20 столбцов (скрытые нейроны)
             ax1.imshow(self.w1_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1)
             ax1.set_title(f'Эпоха {epoch_index + 1} - Веса W1')
             ax1.set_xlabel('Скрытые нейроны (1-20)')
-            ax1.set_ylabel('Входные нейроны (1-10)')
+            ax1.set_ylabel('Входные нейроны (1-11)')
             ax1.set_xticks(range(20))
             ax1.set_xticklabels(range(1, 21))
-            ax1.set_yticks(range(10))
-            ax1.set_yticklabels(range(1, 11))
+            ax1.set_yticks(range(11))
+            ax1.set_yticklabels(range(1, 12))
             
             # W2: 20 строк (скрытые нейроны) x 9 столбцов (выходные нейроны)
             ax2.imshow(self.w2_history[epoch_index], cmap='RdBu', vmin=-1, vmax=1)
