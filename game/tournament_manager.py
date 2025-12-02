@@ -67,12 +67,15 @@ class TournamentManager:
         if winner is None:
             self.results[player1]["Draws"] += 1
             self.results[player2]["Draws"] += 1
-        elif winner == player1:
+        elif winner == player1.symbol:
             self.results[player1]["Wins"] += 1
             self.results[player2]["Losses"] += 1
-        else:
+        elif winner == player2.symbol:
             self.results[player2]["Wins"] += 1
             self.results[player1]["Losses"] += 1
+        else:
+            self.results[player1]["Draws"] += 1
+            self.results[player2]["Draws"] += 1
 
         # Обработка бонусов
         self._process_bonuses(player1, player2)
